@@ -1510,6 +1510,9 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
             
             APP_STATE.soalData.forEach((q, idx) => {
                 text += `${idx + 1}. ${q.pertanyaan}\n`;
+                if(q.butuhGambar) {
+                    text += `   [Ilustrasi/Gambar: ${q.butuhGambar}]\n`;
+                }
                 if(q.opsi) {
                     const labels = ['A', 'B', 'C', 'D', 'E'];
                     q.opsi.forEach((o, oIdx) => {
@@ -1547,7 +1550,7 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
                 return;
             }
 
-            const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } = window.docx;
+            const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } = window.docx;
 
             const docParagraphs = [
                 new Paragraph({
@@ -1565,6 +1568,7 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
             ];
 
             APP_STATE.soalData.forEach((q, idx) => {
+                // Teks Pertanyaan Soal
                 docParagraphs.push(
                     new Paragraph({
                         children: [
@@ -1576,16 +1580,40 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
                     })
                 );
 
+                // Jika soal memiliki ilustrasi/butuhGambar, sertakan keterangan visual ke Word
+                if(q.butuhGambar && q.butuhGambar.trim() !== '') {
+                    docParagraphs.push(
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: `[ILUSTRASI / GAMBAR PENDUKUNG: "${q.butuhGambar}"]`, italics: true, color: "B45309", bold: true })
+                            ],
+                            spaceAfter: { after: 100 }
+                        })
+                    );
+                }
+
+                // Opsi Pilihan Ganda
                 if(q.opsi) {
-                    const labels = ['A', 'B', 'C', 'D'];
+                    const labels = ['A', 'B', 'C', 'D', 'E'];
                     q.opsi.forEach((o, oIdx) => {
                         docParagraphs.push(
                             new Paragraph({
-                                text: `    ${labels[oIdx]}. ${o}`,
+                                text: `    ${labels[oIdx] || (oIdx+1)}. ${o}`,
                                 spaceAfter: { after: 50 }
                             })
                         );
                     });
+                }
+
+                // Kolom Menjodohkan
+                if(q.kolomA && q.kolomB) {
+                    docParagraphs.push(
+                        new Paragraph({
+                            text: "    [Tabel Menjodohkan: Kolom A & Kolom B]",
+                            italics: true,
+                            spaceAfter: { after: 50 }
+                        })
+                    );
                 }
             });
 
