@@ -1216,12 +1216,13 @@ ${materiContext}
 ${kisiPromptContext}
 
 Aturan Penulisan Bentuk Soal:
-- Pilihan Ganda (pg): Sertakan persis ${APP_STATE.pgOptionsCount} opsi pilihan (misal jika ${APP_STATE.pgOptionsCount} adalah 3 buat opsi A, B, C; jika 4 buat opsi A, B, C, D; jika 5 buat opsi A, B, C, D, E) dan tentukan 1 kunci jawaban yang benar.
-- PG Kompleks (pgk): Berikan petunjuk "Pilih lebih dari satu jawaban benar", sertakan opsi A, B, C, D, dan tentukan beberapa jawaban yang benar.
+- Pilihan Ganda (pg): Sertakan persis ${APP_STATE.pgOptionsCount} opsi pilihan dan tentukan 1 kunci jawaban yang benar.
+- PG Kompleks (pgk): Berikan petunjuk "Pilih lebih dari satu jawaban benar", sertakan opsi, dan tentukan beberapa jawaban yang benar.
 - Isian Singkat (isian): Pertanyaan dengan jawaban kata/angka/frasa singkat.
 - Uraian (uraian): Pertanyaan membutuhkan penjelasan komprehensif.
 - Benar-Salah (bs): Pertanyaan berupa pernyataan, opsi 'Benar' atau 'Salah'.
-- Menjodohkan (jodoh): Buat dua daftar berpasangan (Kolom A / Pernyataan dan Kolom B / Pasangan).
+- Menjodohkan (jodoh): Buat dua daftar berpasangan (Kolom A & Kolom B).
+- PENTING (DIAGRAM/GAMBAR AI): Jika soal membutuhkan ilustrasi, diagram, grafik, peta, atau gambar pendukung agar dapat dijawab dengan valid, berikan deskripsi visual gambar pada field 'butuhGambar' (contoh: "Diagram sistem pernapasan manusia lengkap dengan label organ"); jika tidak butuh gambar, kosongkan.
 
 Setiap objek soal harus memiliki struktur JSON yang valid.`;
 
@@ -1231,20 +1232,21 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
                     type: "OBJECT",
                     properties: {
                         nomor: { type: "INTEGER" },
-                        tipe: { type: "STRING" }, // pg, pgk, isian, uraian, bs, jodoh
+                        tipe: { type: "STRING" },
                         pertanyaan: { type: "STRING" },
                         opsi: { 
                             type: "ARRAY", 
                             items: { type: "STRING" } 
-                        }, // Untuk PG, PGK, BS
+                        },
                         kolomA: {
                             type: "ARRAY",
                             items: { type: "STRING" }
-                        }, // Khusus Menjodohkan
+                        },
                         kolomB: {
                             type: "ARRAY",
                             items: { type: "STRING" }
-                        }, // Khusus Menjodohkan
+                        },
+                        butuhGambar: { type: "STRING" }, // Deskripsi ilustrasi gambar pendukung
                         kunciJawaban: { type: "STRING" },
                         pembahasan: { type: "STRING" },
                         tingkatKesulitan: { type: "STRING" }
@@ -1308,6 +1310,54 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
                         ${q.pertanyaan}
                     </div>
                 `;
+
+                // Render Visual/Item Asli Sesuai Kuantitas (Jika Butuh Gambar)
+                if(q.butuhGambar && q.butuhGambar.trim() !== '') {
+                    // Deteksi angka dari teks butuhGambar untuk menampilkan jumlah objek (misal: "5 buah jeruk")
+                    const matchNum = q.butuhGambar.match(/\d+/);
+                    const count = matchNum ? parseInt(matchNum[0]) : 1;
+                    
+                    // Deteksi kata kunci objek (jeruk, apel, bola, pensil, bunga, kucing, buku, dll)
+                    let objectEmoji = '🍎';
+                    let objectName = 'objek';
+                    const lowerText = q.butuhGambar.toLowerCase();
+                    if(lowerText.includes('jeruk')) { objectEmoji = '🍊'; objectName = 'Jeruk'; }
+                    else if(lowerText.includes('apel')) { objectEmoji = '🍎'; objectName = 'Apel'; }
+                    else if(lowerText.includes('bola')) { objectEmoji = '⚽'; objectName = 'Bola'; }
+                    else if(lowerText.includes('pensil')) { objectEmoji = '✏️'; objectName = 'Pensil'; }
+                    else if(lowerText.includes('bunga')) { objectEmoji = '🌻'; objectName = 'Bunga'; }
+                    else if(lowerText.includes('buku')) { objectEmoji = '📚'; objectName = 'Buku'; }
+                    else if(lowerText.includes('ikan')) { objectEmoji = '🐟'; objectName = 'Ikan'; }
+                    else if(lowerText.includes('kucing')) { objectEmoji = '🐱'; objectName = 'Kucing'; }
+                    else if(lowerText.includes('bintang')) { objectEmoji = '⭐'; objectName = 'Bintang'; }
+                    else if(lowerText.includes('daun')) { objectEmoji = '🍃'; objectName = 'Daun'; }
+
+                    // Render grid item sejumlah count (maksimal 12 agar tetap rapi)
+                    let itemsHtml = '';
+                    const displayCount = Math.min(Math.max(count, 1), 12);
+                    for(let i = 0; i < displayCount; i++) {
+                        itemsHtml += `<div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-amber-200 flex items-center justify-center text-2xl transform hover:scale-110 transition cursor-default" title="${objectName} ke-${i+1}">${objectEmoji}</div>`;
+                    }
+
+                    contentHTML += `
+                        <div class="pl-8 pt-1">
+                            <div class="border-2 border-dashed border-amber-300 bg-amber-50/70 rounded-2xl p-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-bold text-amber-900 uppercase tracking-wide bg-amber-200/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                        <i class="fa-solid fa-shapes"></i>
+                                        <span>Ilustrasi Kuantitatif Objektif (${displayCount} Buah ${objectName})</span>
+                                    </span>
+                                    <span class="text-[10px] font-semibold text-amber-800">Sesuai Permintaan Soal</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2.5 py-2">
+                                    ${itemsHtml}
+                                    ${count > 12 ? `<span class="text-xs font-bold text-amber-800 self-center px-2">...dan ${count - 12} lainnya</span>` : ''}
+                                </div>
+                                <p class="text-xs text-amber-900 italic font-medium leading-relaxed" contenteditable="true" onblur="updateButuhGambar(${idx}, this.innerText)">"${q.butuhGambar}"</p>
+                            </div>
+                        </div>
+                    `;
+                }
 
                 // Render Opsi Berdasarkan Tipe
                 if(q.opsi && q.opsi.length > 0) {
@@ -1384,6 +1434,23 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
             if(APP_STATE.soalData[index]) {
                 APP_STATE.soalData[index].pertanyaan = text;
             }
+        }
+
+        function updateButuhGambar(index, text) {
+            if(APP_STATE.soalData[index]) {
+                APP_STATE.soalData[index].butuhGambar = text;
+            }
+        }
+
+        function generateAiImageForQuestion(index) {
+            const q = APP_STATE.soalData[index];
+            if(!q || !q.butuhGambar) return;
+            
+            showLoader("Merender Ulang Gambar Ilustrasi...", "Memperbarui visual pendukung untuk soal nomor " + (index + 1));
+            setTimeout(() => {
+                hideLoader();
+                renderSoalWorkspace(APP_STATE.soalData);
+            }, 800);
         }
 
         function updateOpsiText(qIndex, oIndex, text) {
