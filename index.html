@@ -68,6 +68,7 @@
                 <div>
                     <h1 class="font-bold text-lg leading-tight tracking-tight">SOAL AI</h1>
                     <p class="text-xs text-slate-400">Generator Soal Otomatis</p>
+                    <p class="text-[10px] text-blue-400 font-medium mt-0.5">By: Maz Afan</p>
                 </div>
             </div>
 
@@ -147,8 +148,8 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">Jenjang Pendidikan <span class="text-red-500">*</span></label>
                                 <select id="input-jenjang" onchange="updateKelasOptions()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
-                                    <option value="SD">Sekolah Dasar (SD)</option>
-                                    <option value="SMP" selected>Sekolah Menengah Pertama (SMP)</option>
+                                    <option value="SD" selected>Sekolah Dasar (SD)</option>
+                                    <option value="SMP">Sekolah Menengah Pertama (SMP)</option>
                                     <option value="SMA">Sekolah Menengah Atas (SMA)</option>
                                 </select>
                             </div>
@@ -168,10 +169,35 @@
                             </div>
                         </div>
 
+                        <!-- Baris Tambahan: Semester & Jenis Soal -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Semester -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Semester <span class="text-red-500">*</span></label>
+                                <select id="input-semester" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
+                                    <option value="1" selected>Semester 1 (Ganjil)</option>
+                                    <option value="2">Semester 2 (Genap)</option>
+                                </select>
+                            </div>
+
+                            <!-- Jenis Soal -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Jenis Soal / Asesmen <span class="text-red-500">*</span></label>
+                                <select id="input-jenis-soal" onchange="handleJenisSoalChange()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
+                                    <option value="Asesmen lingkup materi (ulangan harian)" selected>Asesmen Lingkup Materi (Ulangan Harian)</option>
+                                    <option value="Asesmen Tengah Semester (ATS)">Asesmen Tengah Semester (ATS)</option>
+                                    <option value="Asesmen Akhir Semester (AAS)">Asesmen Akhir Semester (AAS)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Materi Pokok -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Materi Pokok <span class="text-red-500">*</span></label>
-                            <input type="text" id="input-materi" placeholder="Contoh: Sistem Pernapasan Manusia dan Gangguannya" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Materi Pokok 
+                                <span id="materi-required-badge" class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="input-materi" placeholder="Contoh: Sistem Pernapasan Manusia dan Gangguannya (Wajib jika Ulangan Harian)" required class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none">
                         </div>
 
                         <!-- Petunjuk Tambahan (Opsional) -->
@@ -206,7 +232,7 @@
                                     <input type="checkbox" id="chk-pg" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
                                     <div>
                                         <p class="text-xs font-bold text-slate-800">Pilihan Ganda</p>
-                                        <p class="text-[10px] text-slate-500">4 opsi (A, B, C, D)</p>
+                                        <p class="text-[10px] text-slate-500">Opsi: <span id="pg-options-label">4</span> pilihan</p>
                                     </div>
                                 </div>
                                 <input type="number" id="num-pg" value="5" min="1" max="50" onchange="calculateTotalSoal()" onclick="event.stopPropagation()" class="w-16 bg-white border border-slate-300 text-center rounded-lg p-1 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none">
@@ -272,6 +298,19 @@
                                 <input type="number" id="num-jodoh" value="0" min="0" max="50" disabled onchange="calculateTotalSoal()" onclick="event.stopPropagation()" class="w-16 bg-white border border-slate-300 text-center rounded-lg p-1 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none opacity-50">
                             </div>
 
+                        </div>
+
+                        <!-- Opsi Pengaturan Jumlah Pilihan Ganda -->
+                        <div id="pg-settings-panel" class="bg-blue-50/60 border border-blue-200/80 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div>
+                                <h4 class="text-xs font-bold text-blue-900">Jumlah Opsi Pilihan Ganda (A, B, C, ...)</h4>
+                                <p class="text-[11px] text-blue-700">Tentukan jumlah opsi jawaban per soal Pilihan Ganda.</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" onclick="setPgOptionsCount(3)" id="btn-opt-3" class="px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition">3 Opsi (A-C)</button>
+                                <button type="button" onclick="setPgOptionsCount(4)" id="btn-opt-4" class="px-3 py-1.5 bg-blue-600 text-white border border-blue-600 rounded-lg text-xs font-semibold shadow-xs transition">4 Opsi (A-D)</button>
+                                <button type="button" onclick="setPgOptionsCount(5)" id="btn-opt-5" class="px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition">5 Opsi (A-E)</button>
+                            </div>
                         </div>
                     </div>
 
@@ -627,11 +666,14 @@
         /* STATE APLIKASI UTAMA */
         const APP_STATE = {
             apiKey: '',
-            jenjang: 'SMP',
-            kelas: '8',
+            jenjang: 'SD',
+            kelas: '6',
             mapel: '',
+            semester: '1',
+            jenisSoal: 'Asesmen lingkup materi (ulangan harian)',
             materi: '',
             petunjuk: '',
+            pgOptionsCount: 4, // 3, 4, or 5 options for Multiple Choice
             bentukSoal: {
                 pg: { active: true, count: 5 },
                 pgk: { active: false, count: 0 },
@@ -657,12 +699,46 @@
             updateKelasOptions();
             calculateTotalSoal();
             validateKesulitanDistribution();
+            handleJenisSoalChange();
+            setPgOptionsCount(4);
             
             // Auto open API modal if key empty on first run
             if(!APP_STATE.apiKey) {
                 setTimeout(() => openApiModal(), 600);
             }
         });
+
+        function setPgOptionsCount(count) {
+            APP_STATE.pgOptionsCount = count;
+            document.getElementById('pg-options-label').textContent = count;
+            
+            [3, 4, 5].forEach(n => {
+                const btn = document.getElementById(`btn-opt-${n}`);
+                if(n === count) {
+                    btn.className = "px-3 py-1.5 bg-blue-600 text-white border border-blue-600 rounded-lg text-xs font-semibold shadow-xs transition";
+                } else {
+                    btn.className = "px-3 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition";
+                }
+            });
+        }
+
+        function handleJenisSoalChange() {
+            const jenisSoalVal = document.getElementById('input-jenis-soal').value;
+            const materiInput = document.getElementById('input-materi');
+            const badge = document.getElementById('materi-required-badge');
+
+            APP_STATE.jenisSoal = jenisSoalVal;
+
+            if(jenisSoalVal === 'Asesmen lingkup materi (ulangan harian)') {
+                materiInput.required = true;
+                materiInput.placeholder = "Contoh: Sistem Pernapasan Manusia (Wajib untuk Ulangan Harian)";
+                badge.classList.remove('hidden');
+            } else {
+                materiInput.required = false;
+                materiInput.placeholder = "Opsional. Jika kosong, AI akan merangkum seluruh materi Semester " + document.getElementById('input-semester').value;
+                badge.classList.add('hidden');
+            }
+        }
 
         function switchTab(tabName) {
             APP_STATE.currentActiveTab = tabName;
@@ -942,6 +1018,8 @@
             APP_STATE.jenjang = document.getElementById('input-jenjang').value;
             APP_STATE.kelas = document.getElementById('input-kelas').value;
             APP_STATE.mapel = document.getElementById('input-mapel').value.trim();
+            APP_STATE.semester = document.getElementById('input-semester').value;
+            APP_STATE.jenisSoal = document.getElementById('input-jenis-soal').value;
             APP_STATE.materi = document.getElementById('input-materi').value.trim();
             APP_STATE.petunjuk = document.getElementById('input-petunjuk').value.trim();
             
@@ -951,8 +1029,13 @@
             APP_STATE.pembahasanOption = document.getElementById('opt-pembahasan').value;
 
             // Validations
-            if(!APP_STATE.mapel || !APP_STATE.materi) {
-                alert("Mata pelajaran dan Materi pokok wajib diisi!");
+            if(!APP_STATE.mapel) {
+                alert("Mata pelajaran wajib diisi!");
+                return;
+            }
+
+            if(APP_STATE.jenisSoal === 'Asesmen lingkup materi (ulangan harian)' && !APP_STATE.materi) {
+                alert("Materi pokok wajib diisi untuk jenis soal Asesmen Lingkup Materi (Ulangan Harian)!");
                 return;
             }
 
@@ -980,10 +1063,16 @@
                 .filter(([_, v]) => v.active && v.count > 0)
                 .map(([k, v]) => `${k.toUpperCase()}: ${v.count} soal`).join(', ');
 
+            const materiContext = APP_STATE.materi 
+                ? `- Materi Pokok: ${APP_STATE.materi}` 
+                : `- Cakupan Materi: Komprehensif seluruh materi Semester ${APP_STATE.semester}`;
+
             const prompt = `Buatkan tabel kisi-kisi soal evaluasi pembelajaran untuk:
 - Jenjang: ${APP_STATE.jenjang} (Kelas ${APP_STATE.kelas})
 - Mata Pelajaran: ${APP_STATE.mapel}
-- Materi Pokok: ${APP_STATE.materi}
+- Semester: ${APP_STATE.semester}
+- Jenis Asesmen / Soal: ${APP_STATE.jenisSoal}
+${materiContext}
 - Petunjuk Tambahan: ${APP_STATE.petunjuk || '-'}
 - Rincian Bentuk Soal: ${activeBentuk}
 - Total Soal: ${totalSoal} Soal
@@ -1038,7 +1127,8 @@ Buat kisi-kisi terstruktur sebanyak persis ${totalSoal} baris. Kolom terdiri dar
             document.getElementById('kisi-meta-info').innerHTML = `
                 <div><strong>Jenjang:</strong> ${APP_STATE.jenjang} Kelas ${APP_STATE.kelas}</div>
                 <div><strong>Mata Pelajaran:</strong> ${APP_STATE.mapel}</div>
-                <div><strong>Materi:</strong> ${APP_STATE.materi}</div>
+                <div><strong>Semester / Jenis:</strong> Sem ${APP_STATE.semester} - ${APP_STATE.jenisSoal}</div>
+                <div><strong>Materi:</strong> ${APP_STATE.materi || 'Komprehensif Semester ' + APP_STATE.semester}</div>
                 <div><strong>Total Indikator:</strong> ${data.length} Soal</div>
             `;
 
@@ -1110,17 +1200,23 @@ Buat kisi-kisi terstruktur sebanyak persis ${totalSoal} baris. Kolom terdiri dar
                 kisiPromptContext = `Gunakan Kisi-Kisi berikut sebagai acuan utama pembuatan soal:\n${JSON.stringify(kisiReference)}`;
             }
 
+            const materiContext = APP_STATE.materi 
+                ? `- Materi Pokok: ${APP_STATE.materi}` 
+                : `- Cakupan Materi: Komprehensif seluruh materi Kurikulum Merdeka/K13 untuk Semester ${APP_STATE.semester} pada Mata Pelajaran ${APP_STATE.mapel}`;
+
             const prompt = `Susunlah naskah soal evaluasi pembelajaran lengkap dengan ketentuan:
 - Jenjang: ${APP_STATE.jenjang} Kelas ${APP_STATE.kelas}
 - Mata Pelajaran: ${APP_STATE.mapel}
-- Materi Pokok: ${APP_STATE.materi}
+- Semester: ${APP_STATE.semester}
+- Jenis Asesmen: ${APP_STATE.jenisSoal}
+${materiContext}
 - Petunjuk Khusus: ${APP_STATE.petunjuk || '-'}
 - Kunci Jawaban Diminta: ${APP_STATE.kunciOption}
 - Pembahasan Diminta: ${APP_STATE.pembahasanOption}
 ${kisiPromptContext}
 
 Aturan Penulisan Bentuk Soal:
-- Pilihan Ganda (pg): Sertakan 4 opsi (A, B, C, D) dan 1 kunci.
+- Pilihan Ganda (pg): Sertakan persis ${APP_STATE.pgOptionsCount} opsi pilihan (misal jika ${APP_STATE.pgOptionsCount} adalah 3 buat opsi A, B, C; jika 4 buat opsi A, B, C, D; jika 5 buat opsi A, B, C, D, E) dan tentukan 1 kunci jawaban yang benar.
 - PG Kompleks (pgk): Berikan petunjuk "Pilih lebih dari satu jawaban benar", sertakan opsi A, B, C, D, dan tentukan beberapa jawaban yang benar.
 - Isian Singkat (isian): Pertanyaan dengan jawaban kata/angka/frasa singkat.
 - Uraian (uraian): Pertanyaan membutuhkan penjelasan komprehensif.
@@ -1177,11 +1273,11 @@ Setiap objek soal harus memiliki struktur JSON yang valid.`;
             document.getElementById('hasil-title-mapel').textContent = `Soal ${APP_STATE.mapel} - Kelas ${APP_STATE.kelas}`;
             
             // Header Formil Dokumen
-            document.getElementById('doc-header-title').textContent = `PENILAIAN EVALUASI ${APP_STATE.mapel.toUpperCase()}`;
+            document.getElementById('doc-header-title').textContent = `${APP_STATE.jenisSoal.toUpperCase()} - ${APP_STATE.mapel.toUpperCase()}`;
             document.getElementById('doc-header-meta').innerHTML = `
                 <div><strong>Jenjang/Kelas:</strong> ${APP_STATE.jenjang} / ${APP_STATE.kelas}</div>
-                <div><strong>Mata Pelajaran:</strong> ${APP_STATE.mapel}</div>
-                <div><strong>Materi:</strong> ${APP_STATE.materi}</div>
+                <div><strong>Semester:</strong> Semester ${APP_STATE.semester}</div>
+                <div><strong>Materi:</strong> ${APP_STATE.materi || 'Komprehensif Sem. ' + APP_STATE.semester}</div>
                 <div><strong>Waktu / Total:</strong> 60 Menit / ${soalList.length} Soal</div>
             `;
 
